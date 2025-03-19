@@ -1,0 +1,51 @@
+#cloudformation template to create iam user with required 
+#permissions and store the access key and secret key of this iam user 
+#in secrets manager with a tag.
+
+AWSTemplateFormatVersion: '2010-09-09'
+Parameters:
+  UserName:
+    Type: String
+    Description: Name of the IAM user
+
+Resources:
+  IAMUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: !Ref UserName
+      Tags: 
+        - Key: "managedby"
+          Value: "FactoryAdmin"
+      Policies:
+        - PolicyName: "allowed-actions"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              # Modify the required permissions here but follow least priviledge principal
+              - Sid: AllowedPermissions
+                Action:
+                  - ec2:*
+                Effect: Allow
+                Resource: '*'
+
+
+  IAMUserAccessKey:
+    Type: AWS::IAM::AccessKey
+    Properties:
+      UserName: !Ref UserName
+    DependsOn: IAMUser
+
+
+  Secret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: !Sub "IAMUserAccessKeys/${UserName}"
+      SecretString: !Sub |
+        {
+          "AccessKeyId": "${IAMUserAccessKey}",
+          "SecretAccessKey": "${IAMUserAccessKey.SecretAccessKey}"
+        }
+      Description: Access key and secret key for the IAM user
+      Tags:
+        - Key: managedby
+          Value: FactoryAdmin
