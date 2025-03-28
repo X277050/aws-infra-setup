@@ -1,0 +1,27 @@
+trigger:
+  branches:
+    include:
+      - main
+ 
+variables:
+  stackName: "MotoshareIAMUserStack"
+  templateFile: "cloudformation/iam-user-rds-access.yaml"
+  region: "us-east-1" # Change if needed
+ 
+stages:
+  - stage: DeployIAMUser
+    displayName: "Deploy IAM User to AWS via CloudFormation"
+    jobs:
+      - job: DeployCF
+        displayName: "Run CloudFormation Deployment"
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - task: AWSCloudFormationCreateOrUpdateStack@1
+            name: deployIAM
+            inputs:
+              awsCredentials: '<Your-AWS-Service-Connection-Name>'
+              regionName: $(region)
+              stackName: $(stackName)
+              templateFile: $(templateFile)
+              capabilities: 'CAPABILITY_NAMED_IAM'
