@@ -1,0 +1,30 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Create IAM user and grant RDS access
+ 
+Resources:
+  MotoshareIAMUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: motoshare-user
+      Path: /
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonRDSFullAccess  # Gives full access to RDS
+ 
+  IAMUserAccessKey:
+    Type: AWS::IAM::AccessKey
+    Properties:
+      UserName: !Ref MotoshareIAMUser
+      Status: Active
+ 
+Outputs:
+  IAMUserName:
+    Description: IAM Username
+    Value: !Ref MotoshareIAMUser
+ 
+  AccessKey:
+    Description: IAM Access Key
+    Value: !Ref IAMUserAccessKey
+ 
+  SecretAccessKey:
+    Description: Secret Access Key
+    Value: !GetAtt IAMUserAccessKey.SecretAccessKey
